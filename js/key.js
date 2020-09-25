@@ -48,7 +48,7 @@ function KeyboardInputManager() {
       83: 2, // S
       65: 3  // A
     };
-    console.log(document.addEventListener.toString)
+  
     // Respond to direction keys
     document.addEventListener("keydown", function (event) {
   
