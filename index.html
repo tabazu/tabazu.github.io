@@ -1,96 +1,268 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html xmlns='http://www.w3.org/1999/xhtml' lang='' xml:lang=''>
 <head>
-	<meta charset="UTF-8">
-	<title>2048 Game</title>
-	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<meta charset='utf-8' />
+	<meta name='viewport' content='width=device-width, user-scalable=no' />
+	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
+	<title>Dodge the Creeps</title>
+	<style type='text/css'>
+
+		body {
+			touch-action: none;
+			margin: 0;
+			border: 0 none;
+			padding: 0;
+			text-align: center;
+			background-color: black;
+		}
+
+		#canvas {
+			display: block;
+			margin: 0;
+			color: white;
+		}
+
+		#canvas:focus {
+			outline: none;
+		}
+
+		.godot {
+			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+			color: #e0e0e0;
+			background-color: #3b3943;
+			background-image: linear-gradient(to bottom, #403e48, #35333c);
+			border: 1px solid #45434e;
+			box-shadow: 0 0 1px 1px #2f2d35;
+		}
+
+
+		/* Status display
+		 * ============== */
+
+		#status {
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			/* don't consume click events - make children visible explicitly */
+			visibility: hidden;
+		}
+
+		#status-progress {
+			width: 366px;
+			height: 7px;
+			background-color: #38363A;
+			border: 1px solid #444246;
+			padding: 1px;
+			box-shadow: 0 0 2px 1px #1B1C22;
+			border-radius: 2px;
+			visibility: visible;
+		}
+
+		@media only screen and (orientation:portrait) {
+			#status-progress {
+				width: 61.8%;
+			}
+		}
+
+		#status-progress-inner {
+			height: 100%;
+			width: 0;
+			box-sizing: border-box;
+			transition: width 0.5s linear;
+			background-color: #202020;
+			border: 1px solid #222223;
+			box-shadow: 0 0 1px 1px #27282E;
+			border-radius: 3px;
+		}
+
+		#status-indeterminate {
+			visibility: visible;
+			position: relative;
+		}
+
+		#status-indeterminate > div {
+			width: 4.5px;
+			height: 0;
+			border-style: solid;
+			border-width: 9px 3px 0 3px;
+			border-color: #2b2b2b transparent transparent transparent;
+			transform-origin: center 21px;
+			position: absolute;
+		}
+
+		#status-indeterminate > div:nth-child(1) { transform: rotate( 22.5deg); }
+		#status-indeterminate > div:nth-child(2) { transform: rotate( 67.5deg); }
+		#status-indeterminate > div:nth-child(3) { transform: rotate(112.5deg); }
+		#status-indeterminate > div:nth-child(4) { transform: rotate(157.5deg); }
+		#status-indeterminate > div:nth-child(5) { transform: rotate(202.5deg); }
+		#status-indeterminate > div:nth-child(6) { transform: rotate(247.5deg); }
+		#status-indeterminate > div:nth-child(7) { transform: rotate(292.5deg); }
+		#status-indeterminate > div:nth-child(8) { transform: rotate(337.5deg); }
+
+		#status-notice {
+			margin: 0 100px;
+			line-height: 1.3;
+			visibility: visible;
+			padding: 4px 6px;
+			visibility: visible;
+		}
+	</style>
+
 </head>
 <body>
+	<canvas id='canvas'>
+		HTML5 canvas appears to be unsupported in the current browser.<br />
+		Please try updating or use a different browser.
+	</canvas>
+	<div id='status'>
+		<div id='status-progress' style='display: none;' oncontextmenu='event.preventDefault();'><div id ='status-progress-inner'></div></div>
+		<div id='status-indeterminate' style='display: none;' oncontextmenu='event.preventDefault();'>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+		</div>
+		<div id='status-notice' class='godot' style='display: none;'></div>
+	</div>
 
-	<div class="container" id="mainVue" v-cloak>
-	    <div class="heading">
-	      <h1 class="title">2048</h1>
-	      <div class="scores-container">
-	        <div class="score-container">{{conf.score}}</div>
-	        <div class="best-container">{{conf.bestScore}}</div>
-	      </div>
-	    </div>
+	<script type='text/javascript' src='Dodge the Creeps.js'></script>
+	<script type='text/javascript'>//<![CDATA[
 
-	    <div class="above-game">
-	      <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
-	      <a class="restart-button" v-on="click: init">New Game</a>
-	      <label class='left' for="noTiles">Select the number of tiles</label>
-	    
-	      <select v-on="change: changesTilesSize" v-selected="conf.size">
-	      	<option value="4">4 tiles</option>
-	      	<option value="5">5 tiles</option>
-	      	<option value="6">6 tiles</option>
-	      </select>
-	    </div>
+		var engine = new Engine;
+		var setStatusMode;
+		var setStatusNotice;
 
-	    <div class="game-container" v-style="width:findDimension + 'px', height: findDimension + 'px'">
-	      <div class="game-message">
-	        <p></p>
-	        <div class="lower">
-		        <a class="keep-playing-button" v-on="click: clearMessage">Keep going</a>
-	          <a class="retry-button" v-on="click: init">Try again</a>
-	        </div>
-	      </div>
+		(function() {
 
-	      <div class="grid-container">
-	      	 <!-- Grid Here -->
-	      		<div v-repeat="grid" class="grid-row">
-					<div v-repeat="grid" class="grid-cell"></div>
-					<!-- <div v-repeat="grid" class="grid-cell" v-style="width: cellW + 'px',height: cellW + 'px'"></div> -->
-				</div>
-	      </div>
+			const EXECUTABLE_NAME = 'Dodge the Creeps';
+			const MAIN_PACK = 'Dodge the Creeps.pck';
+			const INDETERMINATE_STATUS_STEP_MS = 100;
 
-	      <div class="tile-container" id="tile-container">
+			var canvas = document.getElementById('canvas');
+			var statusProgress = document.getElementById('status-progress');
+			var statusProgressInner = document.getElementById('status-progress-inner');
+			var statusIndeterminate = document.getElementById('status-indeterminate');
+			var statusNotice = document.getElementById('status-notice');
 
-				<!-- Component way with template inside component obj -->
-				<!-- <div v-repeat="tiles" v-component="tile"></div> -->
+			var initializing = true;
+			var statusMode = 'hidden';
 
-				<!-- Component way with computed function -->
-				<div v-repeat="tiles" v-component="tile"  v-style="$transform: 'translate(' + calcStyleX + 'px,' + calcStyleY + 'px)'" class="tile tile-{{value}} tile-new{{merged ? ' tile-merged' : ''}}">
-					<div class="tile-inner">{{value}}</div>
-				</div>
+			var animationCallbacks = [];
+			function animate(time) {
+				animationCallbacks.forEach(callback => callback(time));
+				requestAnimationFrame(animate);
+			}
+			requestAnimationFrame(animate);
 
-				<!-- Use of the directive v-style -->
-				<!-- <div v-repeat="tiles" v-style="$transform: 'scale(' + x + ')'" class="tile tile-{{value}} tile-new">
-					<div class="tile-inner">{{value}}</div>
-				</div> -->
+			function adjustCanvasDimensions() {
+				var scale = window.devicePixelRatio || 1;
+				var width = window.innerWidth;
+				var height = window.innerHeight;
+				canvas.width = width * scale;
+				canvas.height = height * scale;
+				canvas.style.width = width + "px";
+				canvas.style.height = height + "px";
+			}
+			animationCallbacks.push(adjustCanvasDimensions);
+			adjustCanvasDimensions();
 
-	      </div>
+			setStatusMode = function setStatusMode(mode) {
 
-	    </div>
-		<p class="game-explanation">
-	    <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
-	  </p>
-	  <hr>
+				if (statusMode === mode || !initializing)
+					return;
+				[statusProgress, statusIndeterminate, statusNotice].forEach(elem => {
+					elem.style.display = 'none';
+				});
+				animationCallbacks = animationCallbacks.filter(function(value) {
+					return (value != animateStatusIndeterminate);
+				});
+				switch (mode) {
+					case 'progress':
+						statusProgress.style.display = 'block';
+						break;
+					case 'indeterminate':
+						statusIndeterminate.style.display = 'block';
+						animationCallbacks.push(animateStatusIndeterminate);
+						break;
+					case 'notice':
+						statusNotice.style.display = 'block';
+						break;
+					case 'hidden':
+						break;
+					default:
+						throw new Error('Invalid status mode');
+				}
+				statusMode = mode;
+			}
 
-	  <p>
-	    <strong class="important">NOTE:</strong> This game was written using Vue.js
-	  </p>
+			function animateStatusIndeterminate(ms) {
 
-	  <hr>
+				var i = Math.floor(ms / INDETERMINATE_STATUS_STEP_MS % 8);
+				if (statusIndeterminate.children[i].style.borderTopColor == '') {
+					Array.prototype.slice.call(statusIndeterminate.children).forEach(child => {
+						child.style.borderTopColor = '';
+					});
+					statusIndeterminate.children[i].style.borderTopColor = '#dfdfdf';
+				}
+			}
 
-	  <p>
-	    Created by <a href="https://github.com/axilleasiv">Achilleas Kiritsakas</a> based on 2048 by <a href="http://gabrielecirulli.com" target="_blank">Gabriele Cirulli.</a> Based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
-	  </p>
+			setStatusNotice = function setStatusNotice(text) {
 
-	  </div>
+				while (statusNotice.lastChild) {
+					statusNotice.removeChild(statusNotice.lastChild);
+				}
+				var lines = text.split('\n');
+				lines.forEach((line) => {
+					statusNotice.appendChild(document.createTextNode(line));
+					statusNotice.appendChild(document.createElement('br'));
+				});
+			};
 
-	<!--<script type="text/x-template" id="grid-template">
-	    <div v-repeat="grid" class="grid-row">
-	    	<div v-repeat="grid" class="grid-cell"></div>
-	    </div>
-	</script> -->
+			engine.setProgressFunc((current, total) => {
 
+				if (total > 0) {
+					statusProgressInner.style.width = current/total * 100 + '%';
+					setStatusMode('progress');
+					if (current === total) {
+						// wait for progress bar animation
+						setTimeout(() => {
+							setStatusMode('indeterminate');
+						}, 500);
+					}
+				} else {
+					setStatusMode('indeterminate');
+				}
+			});
 
+			function displayFailureNotice(err) {
+				var msg = err.message || err;
+				console.error(msg);
+				setStatusNotice(msg);
+				setStatusMode('notice');
+				initializing = false;
+			};
 
-	<script src="./js/store.js"></script>
-	<script src="./js/key.js"></script>
-	<script src="./js/vue.min.js"></script>
-	<script src="./js/main.js"></script>
+			if (!Engine.isWebGLAvailable()) {
+				displayFailureNotice('WebGL not available');
+			} else {
+				setStatusMode('indeterminate');
+				engine.setCanvas(canvas);
+				engine.startGame(EXECUTABLE_NAME, MAIN_PACK).then(() => {
+					setStatusMode('hidden');
+					initializing = false;
+				}, displayFailureNotice);
+			}
+		})();
+	//]]></script>
 </body>
 </html>
+
