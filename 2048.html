@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>2048</title>
   <link rel="stylesheet" href="css/style.css">
+
   <style>
-    [v-cloak] { display: none; }
+    [v-cloak] {
+      display: none;
+    }
 
     .game-container {
       touch-action: none;
@@ -59,6 +62,7 @@
   <main class="container" id="mainVue" v-cloak>
     <header class="heading">
       <h1 class="title">2048</h1>
+
       <div class="scores-container">
         <div class="score-container">{{conf.score}}</div>
         <div class="best-container">{{conf.bestScore}}</div>
@@ -73,27 +77,43 @@
 
     <section class="game-container" aria-label="2048 게임판">
       <div class="grid-container">
-        <div class="grid-row" v-for="row in grid">
-          <div class="grid-cell" v-for="cell in row"></div>
+        <div class="grid-row" v-repeat="row in grid">
+          <div class="grid-cell" v-repeat="cell in row"></div>
         </div>
       </div>
 
       <div class="tile-container">
         <div class="tile"
-             v-for="tile in tiles"
-             v-bind:class="'tile-' + tile.value + (tile.merged ? ' tile-merged' : '')"
-             v-bind:style="{ transform: 'translate(' + (tilePosition * tile.x) + 'px, ' + (tilePosition * tile.y) + 'px)' }">
+             v-repeat="tile in tiles"
+             v-class="{
+               'tile-2': tile.value == 2,
+               'tile-4': tile.value == 4,
+               'tile-8': tile.value == 8,
+               'tile-16': tile.value == 16,
+               'tile-32': tile.value == 32,
+               'tile-64': tile.value == 64,
+               'tile-128': tile.value == 128,
+               'tile-256': tile.value == 256,
+               'tile-512': tile.value == 512,
+               'tile-1024': tile.value == 1024,
+               'tile-2048': tile.value == 2048,
+               'tile-super': tile.value > 2048,
+               'tile-merged': tile.merged
+             }"
+             v-style="{
+               transform: 'translate(' + (tilePosition * tile.x) + 'px, ' + (tilePosition * tile.y) + 'px)'
+             }">
           <div class="tile-inner">{{tile.value}}</div>
         </div>
       </div>
 
-      <div class="game-message">
+      <-message">
         <p></p>
       </div>
     </section>
 
     <p class="game-explanation">
-      방향키 또는 게임판을 밀어 타일을 이동하세요. 같은 숫자 타일은 합쳐집니다.
+      방향키 또는 게임판을 밀어 타일을 이동하세요. 같은 숫자 타일 두 개가 만나면 합쳐집니다.
     </p>
   </main>
 
