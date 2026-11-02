@@ -1,5 +1,105 @@
-<script src="js/vue.js"></script>
-<script src="js/store.js"></script>
-<script src="js/key.js"></script>
-<script src="js/main.js"></script>
-<link rel="stylesheet" href="css/style.css">
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2048</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    [v-cloak] { display: none; }
+
+    .game-container {
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .grid-container,
+    .tile-container {
+      top: 15px;
+      left: 15px;
+    }
+
+    .grid-row {
+      display: flex;
+    }
+
+    .tile {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tile .tile-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    @media screen and (max-width: 520px) {
+      .grid-container,
+      .tile-container {
+        top: 10px;
+        left: 10px;
+      }
+
+      .grid-cell {
+        flex: 0 0 57.5px;
+      }
+
+      .tile {
+        width: 58px;
+        height: 58px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container" id="mainVue" v-cloak>
+    <header class="heading">
+      <h1 class="title">2048</h1>
+      <div class="scores-container">
+        <div class="score-container">{{conf.score}}</div>
+        <div class="best-container">{{conf.bestScore}}</div>
+      </div>
+    </header>
+
+    <section class="above-game">
+      <p class="game-intro">
+        숫자 타일을 합쳐 <strong>2048</strong>을 만드세요!
+      </p>
+    </section>
+
+    <section class="game-container" aria-label="2048 게임판">
+      <div class="grid-container">
+        <div class="grid-row" v-for="row in grid">
+          <div class="grid-cell" v-for="cell in row"></div>
+        </div>
+      </div>
+
+      <div class="tile-container">
+        <div class="tile"
+             v-for="tile in tiles"
+             v-bind:class="'tile-' + tile.value + (tile.merged ? ' tile-merged' : '')"
+             v-bind:style="{ transform: 'translate(' + (tilePosition * tile.x) + 'px, ' + (tilePosition * tile.y) + 'px)' }">
+          <div class="tile-inner">{{tile.value}}</div>
+        </div>
+      </div>
+
+      <div class="game-message">
+        <p></p>
+      </div>
+    </section>
+
+    <p class="game-explanation">
+      방향키 또는 게임판을 밀어 타일을 이동하세요. 같은 숫자 타일은 합쳐집니다.
+    </p>
+  </main>
+
+  <script src="js/vue.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/key.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
