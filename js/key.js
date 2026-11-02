@@ -76,7 +76,7 @@ function KeyboardInputManager() {
   
     // Respond to swipe events
     var touchStartClientX, touchStartClientY;
-    var gameContainer = document.getElementsByClassName("game-container")[0];
+    var gameContainer = document.body;
   
     gameContainer.addEventListener(this.eventTouchstart, function (event) {
       if ((!window.navigator.msPointerEnabled && event.touches.length > 1) ||
@@ -97,7 +97,7 @@ function KeyboardInputManager() {
   
     gameContainer.addEventListener(this.eventTouchmove, function (event) {
       event.preventDefault();
-    });
+    },{passive:false;});
   
     gameContainer.addEventListener(this.eventTouchend, function (event) {
       if ((!window.navigator.msPointerEnabled && event.touches.length > 0) ||
